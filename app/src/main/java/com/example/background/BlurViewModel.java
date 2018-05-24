@@ -27,6 +27,7 @@ import com.example.background.workers.SaveImageToFileWorker;
 
 import java.util.List;
 
+import androidx.work.Constraints;
 import androidx.work.Data;
 import androidx.work.ExistingWorkPolicy;
 import androidx.work.OneTimeWorkRequest;
@@ -81,7 +82,11 @@ public class BlurViewModel extends ViewModel {
             continuation = continuation.then(blurBuilder.build());
         }
 
+        Constraints constraints = new Constraints.Builder()
+                .setRequiresCharging(true)
+                .build();
         OneTimeWorkRequest save = new OneTimeWorkRequest.Builder(SaveImageToFileWorker.class)
+                .setConstraints(constraints)//This adds the Constraints
                 .addTag(TAG_OUTPUT)
                 .build();
         continuation = continuation.then(save);
