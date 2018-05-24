@@ -16,23 +16,65 @@
 
 package com.example.background;
 
+import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.ViewModel;
 import android.net.Uri;
 import android.text.TextUtils;
 
+import com.example.background.workers.BlurWorker;
+import com.example.background.workers.CleanupWorker;
+import com.example.background.workers.SaveImageToFileWorker;
+
+import java.util.List;
+
+import androidx.work.Data;
+import androidx.work.ExistingWorkPolicy;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkContinuation;
+import androidx.work.WorkManager;
+import androidx.work.WorkStatus;
+
+import static com.example.background.Constants.TAG_OUTPUT;
+
 public class BlurViewModel extends ViewModel {
 
     private Uri mImageUri;
+    private WorkManager mWorkManager;
+    private LiveData<List<WorkStatus>> mSavedWorkStatus;
 
     public BlurViewModel() {
+        mWorkManager = WorkManager.getInstance();
+        mSavedWorkStatus = mWorkManager.getStatusesByTag(TAG_OUTPUT);
+    }
+
+    public LiveData<List<WorkStatus>> getOutputStatus() {
+        return mSavedWorkStatus;
     }
 
     /**
      * Create the WorkRequest to apply the blur and save the resulting image
+     *
      * @param blurLevel The amount to blur the image
      */
     void applyBlur(int blurLevel) {
+//        WorkContinuation continuation = mWorkManager.beginWith(OneTimeWorkRequest.from(CleanupWorker.class));
 
+        WorkContinuation continuation = mWorkManager.beginUniqueWork(Constants.IMAGE_MANIPULATION_WORK_NAME,
+                ExistingWorkPolicy.REPLACE,
+                OneTimeWorkRequest.from(CleanupWorker.class));
+        for (int i = 0; i < blurLevel; i++) {
+            OneTimeWorkRequest.Builder blurBuilder = new OneTimeWorkRequest.Builder(BlurWorker.class);
+            if (i == 0) {
+                blurBuilder.setInputData(createInputDataForUri());
+            }
+            continuation = continuation.then(blurBuilder.build());
+        }
+
+        OneTimeWorkRequest save = new OneTimeWorkRequest.Builder(SaveImageToFileWorker.class)
+                .addTag(TAG_OUTPUT)
+                .build();
+        continuation = continuation.then(save);
+        continuation.enqueue();
     }
 
     private Uri uriOrNull(String uriString) {
@@ -56,4 +98,12 @@ public class BlurViewModel extends ViewModel {
         return mImageUri;
     }
 
+
+    private Data createInputDataForUri() {
+        Data.Builder builder = new Data.Builder();
+        if (mImageUri != null) {
+            builder.putString(Constants.KEY_IMAGE_URI, mImageUri.toString());
+        }
+        return builder.build();
+    }
 }
