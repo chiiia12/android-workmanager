@@ -34,6 +34,7 @@ import androidx.work.WorkContinuation;
 import androidx.work.WorkManager;
 import androidx.work.WorkStatus;
 
+import static com.example.background.Constants.IMAGE_MANIPULATION_WORK_NAME;
 import static com.example.background.Constants.TAG_OUTPUT;
 
 public class BlurViewModel extends ViewModel {
@@ -115,5 +116,9 @@ public class BlurViewModel extends ViewModel {
             builder.putString(Constants.KEY_IMAGE_URI, mImageUri.toString());
         }
         return builder.build();
+    }
+
+    void cancelWork() {
+        mWorkManager.cancelUniqueWork(IMAGE_MANIPULATION_WORK_NAME);
     }
 }
