@@ -43,7 +43,8 @@ public class SaveImageToFileWorker extends Worker {
                 return WorkerResult.FAILURE;
             }
             //if you won't write below code, you can't get data through workStatus
-            setOutputData(new Data.Builder().putString(Constants.KEY_IMAGE_URI, resourceUri).build());
+            Data data = new Data.Builder().putString(Constants.KEY_IMAGE_URI, imageUrl).build();
+            setOutputData(data);
             return WorkerResult.SUCCESS;
         } catch (Exception exception) {
             Log.e(TAG, "Unable to save image to Gallery", exception);
