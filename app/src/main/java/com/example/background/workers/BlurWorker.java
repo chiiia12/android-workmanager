@@ -32,7 +32,7 @@ public class BlurWorker extends Worker {
                     resolver.openInputStream(Uri.parse(resourceUri)));
             Bitmap output = WorkerUtils.blurBitmap(picture, applicationContext);
             Uri outputUri = WorkerUtils.writeBitmapToFile(applicationContext, output);
-                setOutputData(new Data.Builder().putString(Constants.KEY_IMAGE_URI,outputUri.toString()).build());
+            setOutputData(new Data.Builder().putString(Constants.KEY_IMAGE_URI, outputUri.toString()).build());
             WorkerUtils.makeStatusNotification("Output is "
                     + outputUri.toString(), applicationContext);
             return WorkerResult.SUCCESS;

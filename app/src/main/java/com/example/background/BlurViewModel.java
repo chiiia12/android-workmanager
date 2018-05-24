@@ -41,6 +41,15 @@ public class BlurViewModel extends ViewModel {
     private Uri mImageUri;
     private WorkManager mWorkManager;
     private LiveData<List<WorkStatus>> mSavedWorkStatus;
+    private Uri mOutputUri;
+
+    public void setOutputUri(String outputUri) {
+        this.mOutputUri = uriOrNull(outputUri);
+    }
+
+    public Uri getOutputUri() {
+        return mOutputUri;
+    }
 
     public BlurViewModel() {
         mWorkManager = WorkManager.getInstance();
@@ -57,11 +66,12 @@ public class BlurViewModel extends ViewModel {
      * @param blurLevel The amount to blur the image
      */
     void applyBlur(int blurLevel) {
-//        WorkContinuation continuation = mWorkManager.beginWith(OneTimeWorkRequest.from(CleanupWorker.class));
 
-        WorkContinuation continuation = mWorkManager.beginUniqueWork(Constants.IMAGE_MANIPULATION_WORK_NAME,
+        WorkContinuation continuation = mWorkManager.beginUniqueWork(
+                Constants.IMAGE_MANIPULATION_WORK_NAME,
                 ExistingWorkPolicy.REPLACE,
                 OneTimeWorkRequest.from(CleanupWorker.class));
+
         for (int i = 0; i < blurLevel; i++) {
             OneTimeWorkRequest.Builder blurBuilder = new OneTimeWorkRequest.Builder(BlurWorker.class);
             if (i == 0) {

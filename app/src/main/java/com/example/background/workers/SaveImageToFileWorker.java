@@ -16,6 +16,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import androidx.work.Data;
 import androidx.work.Worker;
 
 public class SaveImageToFileWorker extends Worker {
@@ -39,6 +40,8 @@ public class SaveImageToFileWorker extends Worker {
                 Log.e(TAG, "Writing to MediaStore failed");
                 return WorkerResult.FAILURE;
             }
+            //if you won't write below code, you can't get data through workStatus
+            setOutputData(new Data.Builder().putString(Constants.KEY_IMAGE_URI, resourceUri).build());
             return WorkerResult.SUCCESS;
         } catch (Exception exception) {
             Log.e(TAG, "Unable to save image to Gallery", exception);
